@@ -53,4 +53,9 @@ public class MrService extends AbstractPersistable {
         this.locationSpread = locationSpread;
     }
 
+    @Override
+    public String toString() {
+        return "Service-" + getId();
+    }
+
 }

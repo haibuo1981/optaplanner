@@ -71,8 +71,8 @@ public class MrServiceMovedProcessesCount implements Serializable, Comparable<Mr
      */
     public int compareTo(MrServiceMovedProcessesCount other) {
         return new CompareToBuilder()
-                .append(service, other.service)
                 .append(movedProcessesCount, other.movedProcessesCount)
+                .append(service, other.service)
                 .toComparison();
     }
 

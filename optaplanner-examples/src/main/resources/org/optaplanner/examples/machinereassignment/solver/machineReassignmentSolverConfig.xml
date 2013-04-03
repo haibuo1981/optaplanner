@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
-  <!--<environmentMode>FAST_ASSERT</environmentMode>-->
+  <environmentMode>FAST_ASSERT</environmentMode>
   <solutionClass>org.optaplanner.examples.machinereassignment.domain.MachineReassignment</solutionClass>
   <planningEntityClass>org.optaplanner.examples.machinereassignment.domain.MrProcessAssignment</planningEntityClass>
 
   <scoreDirectorFactory>
     <scoreDefinitionType>HARD_SOFT_LONG</scoreDefinitionType>
-    <incrementalScoreCalculatorClass>org.optaplanner.examples.machinereassignment.solver.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>
-    <!--<scoreDrl>/org/optaplanner/examples/machinereassignment/solver/machineReassignmentScoreRules.drl</scoreDrl>-->
+    <!--<incrementalScoreCalculatorClass>org.optaplanner.examples.machinereassignment.solver.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>-->
+    <scoreDrl>/org/optaplanner/examples/machinereassignment/solver/machineReassignmentScoreRules.drl</scoreDrl>
+    <assertionScoreDirectorFactory>
+      <incrementalScoreCalculatorClass>org.optaplanner.examples.machinereassignment.solver.score.MachineReassignmentIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    </assertionScoreDirectorFactory>
   </scoreDirectorFactory>
   <termination>
     <maximumMinutesSpend>5</maximumMinutesSpend>
@@ -17,9 +20,9 @@
     <!--<constructionHeuristicType>FIRST_FIT</constructionHeuristicType>-->
     <!--<constructionHeuristicPickEarlyType>FIRST_LAST_STEP_SCORE_EQUAL_OR_IMPROVING</constructionHeuristicPickEarlyType>-->
   <!--</constructionHeuristic>-->
-  <customSolverPhase>
-    <customSolverPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.MrOriginalMachineSolutionInitializer</customSolverPhaseCommandClass>
-  </customSolverPhase>
+  <!--<customSolverPhase>-->
+    <!--<customSolverPhaseCommandClass>org.optaplanner.examples.machinereassignment.solver.solution.initializer.MrOriginalMachineSolutionInitializer</customSolverPhaseCommandClass>-->
+  <!--</customSolverPhase>-->
   <localSearch>
     <unionMoveSelector>
       <changeMoveSelector/>

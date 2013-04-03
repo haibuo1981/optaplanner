@@ -76,4 +76,9 @@ public class MrMachine extends AbstractPersistable {
         return machineMoveCostMap.get(toMachine);
     }
 
+    @Override
+    public String toString() {
+        return "M-" + getId();
+    }
+
 }

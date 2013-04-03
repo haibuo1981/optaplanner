@@ -37,118 +37,118 @@ import org.optaplanner.examples.machinereassignment.domain.solver.MrServiceMoved
 
 global HardSoftLongScoreHolder scoreHolder;
 
-rule "machineUsage"
-        salience 1 // Do these rules first (optional, for performance)
-    when
-        $machineCapacity : MrMachineCapacity($machine : machine, $resource : resource)
-        accumulate(
-                $processAssignment : MrProcessAssignment(machine == $machine),
-            $usageTotal : sum($processAssignment.getUsage($resource))
-        )
-    then
-        insertLogical(new MrMachineUsage($machineCapacity, $usageTotal.intValue()));
-end
-rule "machineTransientUsage"
-        salience 1 // Do these rules first (optional, for performance)
-    when
-        $machineCapacity : MrMachineCapacity(transientlyConsumed == true, $machine : machine, $resource : resource)
-        accumulate(
-                $processAssignment : MrProcessAssignment(originalMachine == $machine, moved == true),
-            $usageTotal : sum($processAssignment.getUsage($resource))
-        )
-    then
-        insertLogical(new MrMachineTransientUsage($machineCapacity, $usageTotal.intValue()));
-end
-
-// ############################################################################
-// Hard constraints
-// ############################################################################
-
-// Capacity constraints + Transient usage constraints
-rule "maximumCapacityNonTransientlyConsumed"
-    when
-        $machineUsage : MrMachineUsage(transientlyConsumed == false, maximumAvailable < 0,
-                $maximumAvailable : maximumAvailable)
-    then
-        scoreHolder.addHardConstraintMatch(kcontext, $maximumAvailable);
-end
-rule "maximumCapacityTransientlyConsumed"
-    when
-        $machineUsage : MrMachineUsage(transientlyConsumed == true,
-                $maximumAvailable : maximumAvailable, $resource : resource, $machine : machine)
-        MrMachineTransientUsage(resource == $resource, machine == $machine,
-                $maximumAvailable < usage, $transientUsage : usage)
-    then
-        scoreHolder.addHardConstraintMatch(kcontext, $maximumAvailable - $transientUsage);
-end
-
-// Conflict constraints
-rule "serviceConflict"
-    when
-        $leftProcessAssignment : MrProcessAssignment($service : service, $machine : machine, $leftId : id)
-        $rightProcessAssignment : MrProcessAssignment(service == $service, machine == $machine, id > $leftId)
-    then
-        scoreHolder.addHardConstraintMatch(kcontext, -1);
-end
-
-// Spread constraints
-rule "serviceLocationSpread"
-    when
-        $service : MrService($locationSpread : locationSpread)
-        $spreadCount : Number(intValue < $locationSpread) from accumulate(
-                $location : MrLocation()
-                and exists MrProcessAssignment(service == $service, location == $location),
-            count($location)
-        )
-    then
-        scoreHolder.addHardConstraintMatch(kcontext, $spreadCount.intValue() - $locationSpread);
-end
-
-// Dependency constraints
-rule "serviceDependency"
-    when
-        $serviceDependency : MrServiceDependency($fromService : fromService, $toService : toService)
-        $processAssignment : MrProcessAssignment(service == $fromService, $neighborhood : neighborhood)
-        not MrProcessAssignment(service == $toService, neighborhood == $neighborhood)
-    then
-        scoreHolder.addHardConstraintMatch(kcontext, -1);
-end
-
-// ############################################################################
-// Soft constraints
-// ############################################################################
-
-// Load cost
-rule "loadCost"
-    when
-        $machineUsage : MrMachineUsage(safetyAvailable < 0,
-                $safetyAvailable : safetyAvailable, $loadCostWeight : loadCostWeight)
-    then
-        scoreHolder.addSoftConstraintMatch(kcontext, $safetyAvailable * $loadCostWeight);
-end
-
-// Balance cost
-rule "balanceCost"
-    when
-        $balancePenalty : MrBalancePenalty($originResource : originResource, $targetResource : targetResource,
-                $multiplicand : multiplicand, $weight : weight)
-        MrMachineUsage(resource == $originResource, maximumAvailable > 0,
-                $machine : machine, $originAvailable : maximumAvailable)
-        MrMachineUsage(resource == $targetResource, machine == $machine,
-                maximumAvailable < $originAvailable * $multiplicand,
-                $targetAvailable : maximumAvailable)
-    then
-        scoreHolder.addSoftConstraintMatch(kcontext, ($targetAvailable - ($originAvailable * $multiplicand)) * $weight);
-end
-
-// Process move cost
-rule "processMoveCost"
-    when
-        MrGlobalPenaltyInfo(processMoveCostWeight > 0, $processMoveCostWeight : processMoveCostWeight)
-        $processAssignment : MrProcessAssignment(moved == true, processMoveCost > 0, $processMoveCost : processMoveCost)
-    then
-        scoreHolder.addSoftConstraintMatch(kcontext, - $processMoveCost * $processMoveCostWeight);
-end
+//rule "machineUsage"
+//        salience 1 // Do these rules first (optional, for performance)
+//    when
+//        $machineCapacity : MrMachineCapacity($machine : machine, $resource : resource)
+//        accumulate(
+//                $processAssignment : MrProcessAssignment(machine == $machine),
+//            $usageTotal : sum($processAssignment.getUsage($resource))
+//        )
+//    then
+//        insertLogical(new MrMachineUsage($machineCapacity, $usageTotal.intValue()));
+//end
+//rule "machineTransientUsage"
+//        salience 1 // Do these rules first (optional, for performance)
+//    when
+//        $machineCapacity : MrMachineCapacity(transientlyConsumed == true, $machine : machine, $resource : resource)
+//        accumulate(
+//                $processAssignment : MrProcessAssignment(originalMachine == $machine, moved == true),
+//            $usageTotal : sum($processAssignment.getUsage($resource))
+//        )
+//    then
+//        insertLogical(new MrMachineTransientUsage($machineCapacity, $usageTotal.intValue()));
+//end
+//
+//// ############################################################################
+//// Hard constraints
+//// ############################################################################
+//
+//// Capacity constraints + Transient usage constraints
+//rule "maximumCapacityNonTransientlyConsumed"
+//    when
+//        $machineUsage : MrMachineUsage(transientlyConsumed == false, maximumAvailable < 0,
+//                $maximumAvailable : maximumAvailable)
+//    then
+//        scoreHolder.addHardConstraintMatch(kcontext, $maximumAvailable);
+//end
+//rule "maximumCapacityTransientlyConsumed"
+//    when
+//        $machineUsage : MrMachineUsage(transientlyConsumed == true,
+//                $maximumAvailable : maximumAvailable, $resource : resource, $machine : machine)
+//        MrMachineTransientUsage(resource == $resource, machine == $machine,
+//                $maximumAvailable < usage, $transientUsage : usage)
+//    then
+//        scoreHolder.addHardConstraintMatch(kcontext, $maximumAvailable - $transientUsage);
+//end
+//
+//// Conflict constraints
+//rule "serviceConflict"
+//    when
+//        $leftProcessAssignment : MrProcessAssignment($service : service, $machine : machine, $leftId : id)
+//        $rightProcessAssignment : MrProcessAssignment(service == $service, machine == $machine, id > $leftId)
+//    then
+//        scoreHolder.addHardConstraintMatch(kcontext, -1);
+//end
+//
+//// Spread constraints
+//rule "serviceLocationSpread"
+//    when
+//        $service : MrService($locationSpread : locationSpread)
+//        $spreadCount : Number(intValue < $locationSpread) from accumulate(
+//                $location : MrLocation()
+//                and exists MrProcessAssignment(service == $service, location == $location),
+//            count($location)
+//        )
+//    then
+//        scoreHolder.addHardConstraintMatch(kcontext, $spreadCount.intValue() - $locationSpread);
+//end
+//
+//// Dependency constraints
+//rule "serviceDependency"
+//    when
+//        $serviceDependency : MrServiceDependency($fromService : fromService, $toService : toService)
+//        $processAssignment : MrProcessAssignment(service == $fromService, $neighborhood : neighborhood)
+//        not MrProcessAssignment(service == $toService, neighborhood == $neighborhood)
+//    then
+//        scoreHolder.addHardConstraintMatch(kcontext, -1);
+//end
+//
+//// ############################################################################
+//// Soft constraints
+//// ############################################################################
+//
+//// Load cost
+//rule "loadCost"
+//    when
+//        $machineUsage : MrMachineUsage(safetyAvailable < 0,
+//                $safetyAvailable : safetyAvailable, $loadCostWeight : loadCostWeight)
+//    then
+//        scoreHolder.addSoftConstraintMatch(kcontext, $safetyAvailable * $loadCostWeight);
+//end
+//
+//// Balance cost
+//rule "balanceCost"
+//    when
+//        $balancePenalty : MrBalancePenalty($originResource : originResource, $targetResource : targetResource,
+//                $multiplicand : multiplicand, $weight : weight)
+//        MrMachineUsage(resource == $originResource, maximumAvailable > 0,
+//                $machine : machine, $originAvailable : maximumAvailable)
+//        MrMachineUsage(resource == $targetResource, machine == $machine,
+//                maximumAvailable < $originAvailable * $multiplicand,
+//                $targetAvailable : maximumAvailable)
+//    then
+//        scoreHolder.addSoftConstraintMatch(kcontext, ($targetAvailable - ($originAvailable * $multiplicand)) * $weight);
+//end
+//
+//// Process move cost
+//rule "processMoveCost"
+//    when
+//        MrGlobalPenaltyInfo(processMoveCostWeight > 0, $processMoveCostWeight : processMoveCostWeight)
+//        $processAssignment : MrProcessAssignment(moved == true, processMoveCost > 0, $processMoveCost : processMoveCost)
+//    then
+//        scoreHolder.addSoftConstraintMatch(kcontext, - $processMoveCost * $processMoveCostWeight);
+//end
 
 // Service move cost
 rule "serviceMovedProcessesCount"
@@ -160,25 +160,26 @@ rule "serviceMovedProcessesCount"
             $movedProcessesCount : count($processAssignment)
         )
     then
+        System.out.println("  serviceMovedProcessesCount called for " + $service);
         insertLogical(new MrServiceMovedProcessesCount($service, $movedProcessesCount.intValue()));
 end
 
 rule "serviceMoveCost"
     when
-        MrGlobalPenaltyInfo(serviceMoveCostWeight > 0, $serviceMoveCostWeight : serviceMoveCostWeight)
         $serviceMovedProcessesCount : MrServiceMovedProcessesCount($service : service, $serviceId : serviceId,
                 $movedProcessesCount : movedProcessesCount)
         not MrServiceMovedProcessesCount(movedProcessesCount > $movedProcessesCount)
         not MrServiceMovedProcessesCount(movedProcessesCount == $movedProcessesCount, serviceId < $serviceId)
     then
-        scoreHolder.addSoftConstraintMatch(kcontext, - $movedProcessesCount * $serviceMoveCostWeight);
+        System.out.println("   serviceMoveCost called for " + $serviceMovedProcessesCount);
+        scoreHolder.addSoftConstraintMatch(kcontext, - $movedProcessesCount);
 end
 
-// Machine move cost
-rule "machineMoveCost"
-    when
-        MrGlobalPenaltyInfo(machineMoveCostWeight > 0, $machineMoveCostWeight : machineMoveCostWeight)
-        $processAssignment : MrProcessAssignment(moved == true, machineMoveCost > 0, $machineMoveCost : machineMoveCost)
-    then
-        scoreHolder.addSoftConstraintMatch(kcontext, - $machineMoveCost * $machineMoveCostWeight);
-end
+//// Machine move cost
+//rule "machineMoveCost"
+//    when
+//        MrGlobalPenaltyInfo(machineMoveCostWeight > 0, $machineMoveCostWeight : machineMoveCostWeight)
+//        $processAssignment : MrProcessAssignment(moved == true, machineMoveCost > 0, $machineMoveCost : machineMoveCost)
+//    then
+//        scoreHolder.addSoftConstraintMatch(kcontext, - $machineMoveCost * $machineMoveCostWeight);
+//end

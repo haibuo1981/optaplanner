@@ -70,4 +70,9 @@ public class MrProcess extends AbstractPersistable {
         return multiplicand;
     }
 
+    @Override
+    public String toString() {
+        return "Process-" + getId() + "(of " + getService() + ")";
+    }
+
 }

@@ -106,16 +106,21 @@ public class DefaultDecider implements Decider {
         ScoreDirector scoreDirector = stepScope.getScoreDirector();
         int moveIndex = 0;
         for (Move move : moveSelector) {
-            LocalSearchMoveScope moveScope = new LocalSearchMoveScope(stepScope);
-            moveScope.setMoveIndex(moveIndex);
-            moveScope.setMove(move);
-            // TODO use Selector filtering to filter out not doable moves
-            if (!move.isMoveDoable(scoreDirector)) {
-                logger.trace("        Ignoring not doable move ({}).", move);
-            } else {
-                doMove(moveScope);
-                if (forager.isQuitEarly()) {
-                    break;
+            if (moveIndex == 646 || moveIndex == 666 || moveIndex == 689
+                    || moveIndex == 696 || moveIndex == 697 || moveIndex == 698
+                    || moveIndex == 708) {
+                System.out.println("Doing moveIndex " + moveIndex + " move " + move);
+                LocalSearchMoveScope moveScope = new LocalSearchMoveScope(stepScope);
+                moveScope.setMoveIndex(moveIndex);
+                moveScope.setMove(move);
+                // TODO use Selector filtering to filter out not doable moves
+                if (!move.isMoveDoable(scoreDirector)) {
+                    logger.trace("        Ignoring not doable move ({}).", move);
+                } else {
+                    doMove(moveScope);
+                    if (forager.isQuitEarly()) {
+                        break;
+                    }
                 }
             }
             moveIndex++;
@@ -142,6 +147,7 @@ public class DefaultDecider implements Decider {
         moveScope.setUndoMove(undoMove);
         move.doMove(scoreDirector);
         processMove(moveScope);
+        System.out.println("Undoing");
         undoMove.doMove(scoreDirector);
         if (assertUndoMoveIsUncorrupted) {
             LocalSearchSolverPhaseScope phaseScope = moveScope.getStepScope()
