@@ -73,7 +73,7 @@ public class ConstraintMatchesDialog extends JDialog {
             unsupportedPanel.add(buttonPanel, BorderLayout.SOUTH);
             setContentPane(unsupportedPanel);
         } else {
-            final List<ConstraintMatchTotal> constraintMatchTotalList
+            final List<ConstraintMatchTotal<?>> constraintMatchTotalList
                     = solutionBusiness.getConstraintMatchTotalList();
             JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             final JTable table = new JTable(new ConstraintMatchTotalTableModel(constraintMatchTotalList));
@@ -102,7 +102,7 @@ public class ConstraintMatchesDialog extends JDialog {
                         if (selectedRow < 0) {
                             detailTextArea.setText("");
                         } else {
-                            ConstraintMatchTotal constraintMatchTotal
+                            ConstraintMatchTotal<?> constraintMatchTotal
                                     = constraintMatchTotalList.get(selectedRow);
                             detailTextArea.setText(buildConstraintMatchSetText(constraintMatchTotal));
                             detailTextArea.setCaretPosition(0);
@@ -118,10 +118,10 @@ public class ConstraintMatchesDialog extends JDialog {
         setLocationRelativeTo(getParent());
     }
 
-    public String buildConstraintMatchSetText(ConstraintMatchTotal constraintMatchTotal) {
-        Set<? extends ConstraintMatch> constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
+    public String buildConstraintMatchSetText(ConstraintMatchTotal<?> constraintMatchTotal) {
+        Set<? extends ConstraintMatch<?>> constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
         StringBuilder text = new StringBuilder(constraintMatchSet.size() * 80);
-        for (ConstraintMatch constraintMatch : constraintMatchSet) {
+        for (ConstraintMatch<?> constraintMatch : constraintMatchSet) {
             text.append(constraintMatch.getJustificationList()).append(" = ")
                     .append(constraintMatch.getScore().toShortString()).append("\n");
         }
@@ -130,9 +130,9 @@ public class ConstraintMatchesDialog extends JDialog {
 
     public static class ConstraintMatchTotalTableModel extends AbstractTableModel {
 
-        private List<ConstraintMatchTotal> constraintMatchTotalList;
+        private List<ConstraintMatchTotal<?>> constraintMatchTotalList;
 
-        public ConstraintMatchTotalTableModel(List<ConstraintMatchTotal> constraintMatchTotalList) {
+        public ConstraintMatchTotalTableModel(List<ConstraintMatchTotal<?>> constraintMatchTotalList) {
             this.constraintMatchTotalList = constraintMatchTotalList;
         }
 
@@ -180,7 +180,7 @@ public class ConstraintMatchesDialog extends JDialog {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            ConstraintMatchTotal constraintMatchTotal = constraintMatchTotalList.get(rowIndex);
+            ConstraintMatchTotal<?> constraintMatchTotal = constraintMatchTotalList.get(rowIndex);
             switch (columnIndex) {
                 case 0:
                     return constraintMatchTotal.getConstraintName();

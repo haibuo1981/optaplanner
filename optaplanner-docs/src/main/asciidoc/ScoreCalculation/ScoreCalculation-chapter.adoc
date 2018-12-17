@@ -701,9 +701,9 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_> {
 
     void resetWorkingSolution(Solution_ workingSolution, boolean constraintMatchEnabled);
 
-    Collection<ConstraintMatchTotal> getConstraintMatchTotals();
+    Collection<ConstraintMatchTotal<?>> getConstraintMatchTotals();
 
-    Map<Object, Indictment> getIndictmentMap();
+    Map<Object, Indictment<?>> getIndictmentMap();
 }
 ----
 
@@ -723,8 +723,8 @@ public class MachineReassignmentIncrementalScoreCalculator
     }
 
     @Override
-    public Collection<ConstraintMatchTotal> getConstraintMatchTotals() {
-        ConstraintMatchTotal maximumCapacityMatchTotal = new ConstraintMatchTotal(
+    public Collection<ConstraintMatchTotal<HardSoftLongScore>> getConstraintMatchTotals() {
+        ConstraintMatchTotal<HardSoftLongScore> maximumCapacityMatchTotal = new ConstraintMatchTotal<>(
                 CONSTRAINT_PACKAGE, "maximumCapacity", HardSoftLongScore.ZERO);
         ...
         for (MrMachineScorePart machineScorePart : machineScorePartMap.values()) {
@@ -737,14 +737,14 @@ public class MachineReassignmentIncrementalScoreCalculator
             }
         }
         ...
-        List<ConstraintMatchTotal> constraintMatchTotalList = new ArrayList<>(4);
+        List<ConstraintMatchTotal<HardSoftLongScore>> constraintMatchTotalList = new ArrayList<>(4);
         constraintMatchTotalList.add(maximumCapacityMatchTotal);
         ...
         return constraintMatchTotalList;
     }
 
     @Override
-    public Map<Object, Indictment> getIndictmentMap() {
+    public Map<Object, Indictment<HardSoftLongScore>> getIndictmentMap() {
         return null; // Calculate it non-incrementally from getConstraintMatchTotals()
     }
 }
@@ -1262,21 +1262,22 @@ get the ``ConstraintMatchTotal``s from the ``ScoreDirector``:
 
 [source,java,options="nowrap"]
 ----
-for (ConstraintMatchTotal constraintMatchTotal : guiScoreDirector.getConstraintMatchTotals()) {
+Collection<ConstraintMatchTotal<HardSoftScore>> constraintMatchTotals = guiScoreDirector.getConstraintMatchTotals();
+for (ConstraintMatchTotal<HardSoftScore> constraintMatchTotal : constraintMatchTotals) {
     String constraintName = constraintMatchTotal.getConstraintName();
     // The score impact of that constraint
-    Score scoreTotal = constraintMatchTotal.getScoreTotal();
+    HardSoftScore totalScore = constraintMatchTotal.getScore();
 
-    for (ConstraintMatch constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+    for (ConstraintMatch<HardSoftScore> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
         List<Object> justificationList = constraintMatch.getJustificationList();
-        Score score = constraintMatch.getScore();
+        HardSoftScore score = constraintMatch.getScore();
         ...
     }
 }
 ----
 
 Each `ConstraintMatchTotal` is one constraint (so  one score rule) and has a part of the overall score.
-The sum of `ConstraintMatchTotal.getScoreTotal()` equals the overall score.
+The sum of all the `ConstraintMatchTotal.getScore()` equals the overall score.
 
 [NOTE]
 ====
@@ -1295,25 +1296,25 @@ get the `Indictment` map from the ``ScoreDirector``:
 
 [source,java,options="nowrap"]
 ----
-Map<Object, Indictment> indictmentMap = guiScoreDirector.getIndictmentMap();
+Map<Object, Indictment<HardSoftScore>> indictmentMap = guiScoreDirector.getIndictmentMap();
 for (CloudProcess process : cloudBalance.getProcessList()) {
-    Indictment indictment = indictmentMap.get(process);
+    Indictment<HardSoftScore> indictment = indictmentMap.get(process);
     if (indictment == null) {
         continue;
     }
     // The score impact of that planning entity
-    Score scoreTotal = indictment.getScoreTotal();
+    HardSoftScore totalScore = indictment.getScore();
 
-    for (ConstraintMatch constraintMatch : indictment.getConstraintMatchSet()) {
+    for (ConstraintMatch<HardSoftScore> constraintMatch : indictment.getConstraintMatchSet()) {
         String constraintName = constraintMatch.getConstraintName();
-        Score score = constraintMatch.getScore();
+        HardSoftScore score = constraintMatch.getScore();
         ...
     }
 }
 ----
 
 Each `Indictment` is the sum of all constraints where that justification object is involved with.
-The sum of `Indictment.getScoreTotal()` differs from the overall score,
+The sum of all the `Indictment.getScoreTotal()` differs from the overall score,
 because multiple ``Indictment``s can share the same `ConstraintMatch`.
 
 [NOTE]

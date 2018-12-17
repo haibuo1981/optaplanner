@@ -250,14 +250,14 @@ public class SolutionBusiness<Solution_> {
         return guiScoreDirector.isConstraintMatchEnabled();
     }
 
-    public List<ConstraintMatchTotal> getConstraintMatchTotalList() {
-        List<ConstraintMatchTotal> constraintMatchTotalList = new ArrayList<>(
+    public List<ConstraintMatchTotal<?>> getConstraintMatchTotalList() {
+        List<ConstraintMatchTotal<?>> constraintMatchTotalList = new ArrayList<>(
                 guiScoreDirector.getConstraintMatchTotals());
         Collections.sort(constraintMatchTotalList);
         return constraintMatchTotalList;
     }
 
-    public Map<Object, Indictment> getIndictmentMap() {
+    public Map<Object, Indictment<?>> getIndictmentMap() {
         return guiScoreDirector.getIndictmentMap();
     }
 

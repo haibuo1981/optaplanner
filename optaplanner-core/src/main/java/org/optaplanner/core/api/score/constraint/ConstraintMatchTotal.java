@@ -30,21 +30,22 @@ import org.optaplanner.core.impl.score.director.ScoreDirector;
 /**
  * Retrievable from {@link ScoreDirector#getConstraintMatchTotals()}.
  */
-public final class ConstraintMatchTotal implements Serializable, Comparable<ConstraintMatchTotal> {
+public final class ConstraintMatchTotal<Score_ extends Score<Score_>>
+        implements Serializable, Comparable<ConstraintMatchTotal<Score_>> {
 
     private final String constraintPackage;
     private final String constraintName;
-    private final Score constraintWeight;
+    private final Score_ constraintWeight;
 
-    private final Set<ConstraintMatch> constraintMatchSet;
-    private Score score;
+    private final Set<ConstraintMatch<Score_>> constraintMatchSet;
+    private Score_ score;
 
     /**
      * @param constraintPackage never null
      * @param constraintName never null
      * @param zeroScore never null
      */
-    public ConstraintMatchTotal(String constraintPackage, String constraintName, Score zeroScore) {
+    public ConstraintMatchTotal(String constraintPackage, String constraintName, Score_ zeroScore) {
         this(constraintPackage, constraintName, null, zeroScore);
     }
 
@@ -54,7 +55,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
      * @param constraintWeight null if {@link ConstraintWeight} isn't used for this constraint
      * @param zeroScore never null
      */
-    public ConstraintMatchTotal(String constraintPackage, String constraintName, Score constraintWeight, Score zeroScore) {
+    public ConstraintMatchTotal(String constraintPackage, String constraintName, Score_ constraintWeight, Score_ zeroScore) {
         this.constraintPackage = constraintPackage;
         this.constraintName = constraintName;
         constraintMatchSet = new LinkedHashSet<>();
@@ -82,14 +83,14 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
      * Do not confuse with {@link #getScore()}.
      * @return null if {@link ConstraintWeight} isn't used for this constraint
      */
-    public Score getConstraintWeight() {
+    public Score_ getConstraintWeight() {
         return constraintWeight;
     }
 
     /**
      * @return never null
      */
-    public Set<ConstraintMatch> getConstraintMatchSet() {
+    public Set<ConstraintMatch<Score_>> getConstraintMatchSet() {
         return constraintMatchSet;
     }
 
@@ -104,7 +105,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
      * Sum of the {@link #getConstraintMatchSet()}'s {@link ConstraintMatch#getScore()}.
      * @return never null
      */
-    public Score getScore() {
+    public Score_ getScore() {
         return score;
     }
 
@@ -113,7 +114,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
      * @deprecated in favor of {@link #getScore()}
      */
     @Deprecated
-    public Score getScoreTotal() {
+    public Score_ getScoreTotal() {
         return getScore();
     }
 
@@ -121,9 +122,9 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
     // Worker methods
     // ************************************************************************
 
-    public ConstraintMatch addConstraintMatch(List<Object> justificationList, Score score) {
+    public ConstraintMatch<Score_> addConstraintMatch(List<Object> justificationList, Score_ score) {
         this.score = this.score.add(score);
-        ConstraintMatch constraintMatch = new ConstraintMatch(constraintPackage, constraintName,
+        ConstraintMatch<Score_> constraintMatch = new ConstraintMatch<>(constraintPackage, constraintName,
                 justificationList, score);
         boolean added = constraintMatchSet.add(constraintMatch);
         if (!added) {
@@ -134,7 +135,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
         return constraintMatch;
     }
 
-    public void removeConstraintMatch(ConstraintMatch constraintMatch) {
+    public void removeConstraintMatch(ConstraintMatch<Score_> constraintMatch) {
         score = score.subtract(constraintMatch.getScore());
         boolean removed = constraintMatchSet.remove(constraintMatch);
         if (!removed) {
@@ -153,7 +154,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
     }
 
     @Override
-    public int compareTo(ConstraintMatchTotal other) {
+    public int compareTo(ConstraintMatchTotal<Score_> other) {
         if (!constraintPackage.equals(other.constraintPackage)) {
             return constraintPackage.compareTo(other.constraintPackage);
         } else if (!constraintName.equals(other.constraintName)) {
@@ -168,7 +169,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
         if (this == o) {
             return true;
         } else if (o instanceof ConstraintMatchTotal) {
-            ConstraintMatchTotal other = (ConstraintMatchTotal) o;
+            ConstraintMatchTotal<Score_> other = (ConstraintMatchTotal<Score_>) o;
             return constraintPackage.equals(other.constraintPackage)
                     && constraintName.equals(other.constraintName);
         } else {
@@ -185,7 +186,7 @@ public final class ConstraintMatchTotal implements Serializable, Comparable<Cons
 
     @Override
     public String toString() {
-        return getConstraintId() + "=" + getScore();
+        return getConstraintId() + "=" + score;
     }
 
 }

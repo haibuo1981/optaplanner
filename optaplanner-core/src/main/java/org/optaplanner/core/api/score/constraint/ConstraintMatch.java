@@ -24,13 +24,14 @@ import org.optaplanner.core.api.score.Score;
 /**
  * Retrievable from {@link ConstraintMatchTotal#getConstraintMatchSet()}.
  */
-public final class ConstraintMatch implements Serializable, Comparable<ConstraintMatch> {
+public final class ConstraintMatch<Score_ extends Score<Score_>>
+        implements Serializable, Comparable<ConstraintMatch<Score_>> {
 
     private final String constraintPackage;
     private final String constraintName;
 
     private final List<Object> justificationList;
-    private final Score score;
+    private final Score_ score;
 
     /**
      * @param constraintPackage never null
@@ -39,7 +40,7 @@ public final class ConstraintMatch implements Serializable, Comparable<Constrain
      * @param score never null
      */
     public ConstraintMatch(String constraintPackage, String constraintName,
-            List<Object> justificationList, Score score) {
+            List<Object> justificationList, Score_ score) {
         this.constraintPackage = constraintPackage;
         this.constraintName = constraintName;
         this.justificationList = justificationList;
@@ -58,7 +59,7 @@ public final class ConstraintMatch implements Serializable, Comparable<Constrain
         return justificationList;
     }
 
-    public Score getScore() {
+    public Score_ getScore() {
         return score;
     }
 
@@ -75,7 +76,7 @@ public final class ConstraintMatch implements Serializable, Comparable<Constrain
     }
 
     @Override
-    public int compareTo(ConstraintMatch other) {
+    public int compareTo(ConstraintMatch<Score_> other) {
         if (!constraintPackage.equals(other.constraintPackage)) {
             return constraintPackage.compareTo(other.constraintPackage);
         } else if (!constraintName.equals(other.constraintName)) {
@@ -100,7 +101,7 @@ public final class ConstraintMatch implements Serializable, Comparable<Constrain
         if (this == o) {
             return true;
         } else if (o instanceof ConstraintMatch) {
-            ConstraintMatch other = (ConstraintMatch) o;
+            ConstraintMatch<Score_> other = (ConstraintMatch<Score_>) o;
             return constraintPackage.equals(other.constraintPackage)
                     && constraintName.equals(other.constraintName)
                     && justificationList.equals(other.justificationList);
@@ -119,7 +120,7 @@ public final class ConstraintMatch implements Serializable, Comparable<Constrain
 
     @Override
     public String toString() {
-        return getIdentificationString() + "=" + getScore();
+        return getIdentificationString() + "=" + score;
     }
 
 }

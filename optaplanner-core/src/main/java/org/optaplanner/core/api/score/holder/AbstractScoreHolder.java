@@ -36,11 +36,11 @@ import org.optaplanner.core.api.score.constraint.Indictment;
  * Abstract superclass for {@link ScoreHolder}.
  * @param <Score_> the {@link Score} type
  */
-public abstract class AbstractScoreHolder<Score_ extends Score> implements ScoreHolder<Score_>, Serializable {
+public abstract class AbstractScoreHolder<Score_ extends Score<Score_>> implements ScoreHolder<Score_>, Serializable {
 
     protected final boolean constraintMatchEnabled;
-    protected final Map<String, ConstraintMatchTotal> constraintMatchTotalMap;
-    protected final Map<Object, Indictment> indictmentMap;
+    protected final Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap;
+    protected final Map<Object, Indictment<Score_>> indictmentMap;
     protected final Score_ zeroScore;
 
     protected AbstractScoreHolder(boolean constraintMatchEnabled, Score_ zeroScore) {
@@ -58,7 +58,7 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
     }
 
     @Override
-    public Collection<ConstraintMatchTotal> getConstraintMatchTotals() {
+    public Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals() {
         if (!isConstraintMatchEnabled()) {
             throw new IllegalStateException("When constraintMatchEnabled (" + isConstraintMatchEnabled()
                     + ") is disabled in the constructor, this method should not be called.");
@@ -67,7 +67,7 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
     }
 
     @Override
-    public Map<Object, Indictment> getIndictmentMap() {
+    public Map<Object, Indictment<Score_>> getIndictmentMap() {
         if (!isConstraintMatchEnabled()) {
             throw new IllegalStateException("When constraintMatchEnabled (" + isConstraintMatchEnabled()
                     + ") is disabled in the constructor, this method should not be called.");
@@ -89,12 +89,12 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
             String constraintName = rule.getName();
             String constraintId = constraintPackage + "/" + constraintName;
             constraintMatchTotalMap.put(constraintId,
-                    new ConstraintMatchTotal(constraintPackage, constraintName, constraintWeight, zeroScore));
+                    new ConstraintMatchTotal<>(constraintPackage, constraintName, constraintWeight, zeroScore));
         }
     }
 
     protected void registerConstraintMatch(RuleContext kcontext,
-            final Runnable constraintUndoListener, Supplier<Score> scoreSupplier) {
+            final Runnable constraintUndoListener, Supplier<Score_> scoreSupplier) {
         AgendaItem<?> agendaItem = (AgendaItem) kcontext.getMatch();
         ConstraintActivationUnMatchListener constraintActivationUnMatchListener
                 = new ConstraintActivationUnMatchListener(constraintUndoListener);
@@ -103,13 +103,13 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
             List<Object> justificationList = extractJustificationList(kcontext);
             // Not needed in fast code: Add ConstraintMatch
             constraintActivationUnMatchListener.constraintMatchTotal = findConstraintMatchTotal(kcontext);
-            ConstraintMatch constraintMatch = constraintActivationUnMatchListener.constraintMatchTotal
+            ConstraintMatch<Score_> constraintMatch = constraintActivationUnMatchListener.constraintMatchTotal
                     .addConstraintMatch(justificationList, scoreSupplier.get());
-            List<Indictment> indictmentList = justificationList.stream()
+            List<Indictment<Score_>> indictmentList = justificationList.stream()
                     .distinct() // One match might have the same justification twice
                     .map(justification -> {
-                        Indictment indictment = indictmentMap.computeIfAbsent(justification,
-                                k -> new Indictment(justification, zeroScore));
+                        Indictment<Score_> indictment = indictmentMap.computeIfAbsent(justification,
+                                k -> new Indictment<>(justification, zeroScore));
                         indictment.addConstraintMatch(constraintMatch);
                         return indictment;
                     }).collect(Collectors.toList());
@@ -118,13 +118,13 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
         }
     }
 
-    private ConstraintMatchTotal findConstraintMatchTotal(RuleContext kcontext) {
+    private ConstraintMatchTotal<Score_> findConstraintMatchTotal(RuleContext kcontext) {
         Rule rule = kcontext.getRule();
         String constraintPackage = rule.getPackageName();
         String constraintName = rule.getName();
         String constraintId = constraintPackage + "/" + constraintName;
         return constraintMatchTotalMap.computeIfAbsent(constraintId,
-                k -> new ConstraintMatchTotal(constraintPackage, constraintName, null, zeroScore));
+                k -> new ConstraintMatchTotal<>(constraintPackage, constraintName, null, zeroScore));
     }
 
     protected List<Object> extractJustificationList(RuleContext kcontext) {
@@ -136,9 +136,9 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
 
         private final Runnable constraintUndoListener;
 
-        private ConstraintMatchTotal constraintMatchTotal;
-        private List<Indictment> indictmentList;
-        private ConstraintMatch constraintMatch;
+        private ConstraintMatchTotal<Score_> constraintMatchTotal;
+        private List<Indictment<Score_>> indictmentList;
+        private ConstraintMatch<Score_> constraintMatch;
 
         public ConstraintActivationUnMatchListener(Runnable constraintUndoListener) {
             this.constraintUndoListener = constraintUndoListener;
@@ -150,7 +150,7 @@ public abstract class AbstractScoreHolder<Score_ extends Score> implements Score
             if (constraintMatchEnabled) {
                 // Not needed in fast code: Remove ConstraintMatch
                 constraintMatchTotal.removeConstraintMatch(constraintMatch);
-                for (Indictment indictment : indictmentList) {
+                for (Indictment<Score_> indictment : indictmentList) {
                     indictment.removeConstraintMatch(constraintMatch);
                     if (indictment.getConstraintMatchSet().isEmpty()) {
                         indictmentMap.remove(indictment.getJustification());

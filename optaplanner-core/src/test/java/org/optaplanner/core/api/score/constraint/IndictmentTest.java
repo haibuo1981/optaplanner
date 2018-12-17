@@ -31,23 +31,23 @@ public class IndictmentTest {
         TestdataEntity e1 = new TestdataEntity("e1");
         TestdataEntity e2 = new TestdataEntity("e2");
         TestdataEntity e3 = new TestdataEntity("e3");
-        Indictment indictment = new Indictment(e1, SimpleScore.ZERO);
+        Indictment<SimpleScore> indictment = new Indictment<>(e1, SimpleScore.ZERO);
         assertEquals(SimpleScore.ZERO, indictment.getScore());
 
-        ConstraintMatch match1 = new ConstraintMatch("package1", "constraint1", asList(e1), SimpleScore.of(-1));
+        ConstraintMatch<SimpleScore> match1 = new ConstraintMatch<>("package1", "constraint1", asList(e1), SimpleScore.of(-1));
         indictment.addConstraintMatch(match1);
         assertEquals(SimpleScore.of(-1), indictment.getScore());
         // Different constraintName
-        ConstraintMatch match2 = new ConstraintMatch("package1", "constraint2", asList(e1), SimpleScore.of(-20));
+        ConstraintMatch<SimpleScore> match2 = new ConstraintMatch<>("package1", "constraint2", asList(e1), SimpleScore.of(-20));
         indictment.addConstraintMatch(match2);
         assertEquals(SimpleScore.of(-21), indictment.getScore());
-        indictment.addConstraintMatch(new ConstraintMatch("package1", "constraint3", asList(e1, e2), SimpleScore.of(-300)));
+        indictment.addConstraintMatch(new ConstraintMatch<>("package1", "constraint3", asList(e1, e2), SimpleScore.of(-300)));
         assertEquals(SimpleScore.of(-321), indictment.getScore());
         // Different justification
-        indictment.addConstraintMatch(new ConstraintMatch("package1", "constraint3", asList(e1, e3), SimpleScore.of(-4000)));
+        indictment.addConstraintMatch(new ConstraintMatch<>("package1", "constraint3", asList(e1, e3), SimpleScore.of(-4000)));
         assertEquals(SimpleScore.of(-4321), indictment.getScore());
         // Almost duplicate, but e2 and e1 are in reverse order, so different justification
-        indictment.addConstraintMatch(new ConstraintMatch("package1", "constraint3", asList(e2, e1), SimpleScore.of(-50000)));
+        indictment.addConstraintMatch(new ConstraintMatch<>("package1", "constraint3", asList(e2, e1), SimpleScore.of(-50000)));
         assertEquals(SimpleScore.of(-54321), indictment.getScore());
 
         indictment.removeConstraintMatch(match2);
@@ -59,27 +59,27 @@ public class IndictmentTest {
     @Test
     public void equalsAndHashCode() {
         PlannerAssert.assertObjectsAreEqual(
-                new Indictment("e1", SimpleScore.ZERO),
-                new Indictment("e1", SimpleScore.ZERO),
-                new Indictment("e1", SimpleScore.of(-7))
+                new Indictment<>("e1", SimpleScore.ZERO),
+                new Indictment<>("e1", SimpleScore.ZERO),
+                new Indictment<>("e1", SimpleScore.of(-7))
         );
         PlannerAssert.assertObjectsAreNotEqual(
-                new Indictment("a", SimpleScore.ZERO),
-                new Indictment("aa", SimpleScore.ZERO),
-                new Indictment("b", SimpleScore.ZERO),
-                new Indictment("c", SimpleScore.ZERO)
+                new Indictment<>("a", SimpleScore.ZERO),
+                new Indictment<>("aa", SimpleScore.ZERO),
+                new Indictment<>("b", SimpleScore.ZERO),
+                new Indictment<>("c", SimpleScore.ZERO)
         );
     }
 
     @Test
     public void compareTo() {
         PlannerAssert.assertCompareToOrder(
-                new Indictment("a", SimpleScore.ZERO),
-                new Indictment("aa", SimpleScore.ZERO),
-                new Indictment("ab", SimpleScore.ZERO),
-                new Indictment("b", SimpleScore.ZERO),
-                new Indictment("c", SimpleScore.ZERO),
-                new Indictment("d", SimpleScore.ZERO)
+                new Indictment<>("a", SimpleScore.ZERO),
+                new Indictment<>("aa", SimpleScore.ZERO),
+                new Indictment<>("ab", SimpleScore.ZERO),
+                new Indictment<>("b", SimpleScore.ZERO),
+                new Indictment<>("c", SimpleScore.ZERO),
+                new Indictment<>("d", SimpleScore.ZERO)
         );
     }
 

@@ -109,13 +109,13 @@ public abstract class SolverPerformanceTest<Solution_> extends LoggingTest {
         return solverFactory;
     }
 
-    private void assertScoreAndConstraintMatches(Solver<Solution_> solver, Solution_ bestSolution, String bestScoreLimitString) {
+    private <Score_ extends Score<Score_>> void assertScoreAndConstraintMatches(Solver<Solution_> solver, Solution_ bestSolution, String bestScoreLimitString) {
         assertNotNull(bestSolution);
         InnerScoreDirectorFactory<Solution_> scoreDirectorFactory
                 = (InnerScoreDirectorFactory<Solution_>) solver.getScoreDirectorFactory();
-        Score bestScore = scoreDirectorFactory.getSolutionDescriptor().getScore(bestSolution);
-        ScoreDefinition scoreDefinition = scoreDirectorFactory.getScoreDefinition();
-        Score bestScoreLimit = scoreDefinition.parseScore(bestScoreLimitString);
+        Score_ bestScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(bestSolution);
+        ScoreDefinition<Score_> scoreDefinition = scoreDirectorFactory.getScoreDefinition();
+        Score_ bestScoreLimit = scoreDefinition.parseScore(bestScoreLimitString);
         assertTrue("The bestScore (" + bestScore + ") must be at least the bestScoreLimit (" + bestScoreLimit + ").",
                 bestScore.compareTo(bestScoreLimit) >= 0);
 
@@ -124,11 +124,12 @@ public abstract class SolverPerformanceTest<Solution_> extends LoggingTest {
             Score score = scoreDirector.calculateScore();
             assertEquals(score, bestScore);
             if (scoreDirector.isConstraintMatchEnabled()) {
-                Collection<ConstraintMatchTotal> constraintMatchTotals = scoreDirector.getConstraintMatchTotals();
+                Collection<ConstraintMatchTotal<Score_>> constraintMatchTotals = scoreDirector.getConstraintMatchTotals();
                 assertNotNull(constraintMatchTotals);
                 assertEquals(score, constraintMatchTotals.stream()
                         .map(ConstraintMatchTotal::getScore)
-                        .reduce(Score::add).orElse(scoreDefinition.getZeroScore()));
+                        .reduce(Score::add)
+                        .orElse(scoreDefinition.getZeroScore()));
                 assertNotNull(scoreDirector.getIndictmentMap());
             }
         }

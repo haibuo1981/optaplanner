@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
+import org.optaplanner.core.api.score.Score;
 import org.optaplanner.core.api.score.constraint.ConstraintMatchTotal;
 import org.optaplanner.core.api.score.constraint.Indictment;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
@@ -49,13 +50,13 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_>
      * @throws IllegalStateException if {@link #resetWorkingSolution}'s constraintMatchEnabled parameter was false
      * @see ScoreDirector#getConstraintMatchTotals()
      */
-    Collection<ConstraintMatchTotal> getConstraintMatchTotals();
+    <Score_ extends Score<Score_>> Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
 
     /**
      * @return null if it should to be calculated non-incrementally from {@link #getConstraintMatchTotals()}
      * @throws IllegalStateException if {@link #resetWorkingSolution}'s constraintMatchEnabled parameter was false
      * @see ScoreDirector#getIndictmentMap()
      */
-    Map<Object, Indictment> getIndictmentMap();
+    <Score_ extends Score<Score_>> Map<Object, Indictment<Score_>> getIndictmentMap();
 
 }

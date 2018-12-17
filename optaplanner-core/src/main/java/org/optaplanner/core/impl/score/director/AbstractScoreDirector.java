@@ -267,25 +267,26 @@ public abstract class AbstractScoreDirector<Solution_, Factory_ extends Abstract
     }
 
     @Override
-    public String explainScore() {
+    public <Score_ extends Score<Score_>> String explainScore() {ggg;
         final int INDICTMENT_LIMIT = 5;
         final int CONSTRAINT_MATCH_LIMIT = 2;
         Score workingScore = calculateScore();
-        Collection<ConstraintMatchTotal> constraintMatchTotals = getConstraintMatchTotals();
+        Collection<ConstraintMatchTotal<Score_>> constraintMatchTotals = getConstraintMatchTotals();
         ConstraintMatchScoreComparator constraintMatchScoreComparator = new ConstraintMatchScoreComparator();
         StringBuilder scoreExplanation = new StringBuilder((constraintMatchTotals.size() + 4 + 2 * INDICTMENT_LIMIT) * 80);
         scoreExplanation.append("Explanation of score (").append(workingScore).append("):\n");
         scoreExplanation.append("    Constraint match totals:\n");
         constraintMatchTotals.stream()
-                .sorted(new ConstraintMatchTotalScoreComparator())
+                .sorted(Comparator.comparing(ConstraintMatchTotal::getScore))
                 .forEach(constraintMatchTotal -> {
-                    Set<ConstraintMatch> constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
+                    Set<ConstraintMatch<Score_>> constraintMatchSet = constraintMatchTotal.getConstraintMatchSet();
                     scoreExplanation
                             .append("        ").append(constraintMatchTotal.getScore().toShortString())
                             .append(": constraint (").append(constraintMatchTotal.getConstraintName())
                             .append(") has ").append(constraintMatchSet.size()).append(" matches:\n");
                     constraintMatchSet.stream()
-                            .sorted(constraintMatchScoreComparator).limit(CONSTRAINT_MATCH_LIMIT)
+                            .sorted(Comparator.comparing(ConstraintMatch::getScore))
+                            .limit(CONSTRAINT_MATCH_LIMIT)
                             .forEach(constraintMatch -> scoreExplanation
                                     .append("            ").append(constraintMatch.getScore().toShortString())
                                     .append(": justifications (").append(constraintMatch.getJustificationList())
@@ -295,13 +296,14 @@ public abstract class AbstractScoreDirector<Solution_, Factory_ extends Abstract
                     }
                 });
 
-        Collection<Indictment> indictments = getIndictmentMap().values();
+        Map<Object, Indictment<Score_>> indictmentMap = getIndictmentMap();
         scoreExplanation.append("    Indictments (top ").append(INDICTMENT_LIMIT)
-                .append(" of ").append(indictments.size()).append("):\n");
-        indictments.stream()
-                .sorted(new IndictmentScoreComparator()).limit(INDICTMENT_LIMIT)
+                .append(" of ").append(indictmentMap.size()).append("):\n");
+        indictmentMap.values().stream()
+                .sorted(Comparator.comparing(Indictment::getScore))
+                .limit(INDICTMENT_LIMIT)
                 .forEach(indictment -> {
-                    Set<ConstraintMatch> constraintMatchSet = indictment.getConstraintMatchSet();
+                    Set<ConstraintMatch<Score_>> constraintMatchSet = indictment.getConstraintMatchSet();
                     scoreExplanation
                             .append("        ").append(indictment.getScore().toShortString())
                             .append(": justification (").append(indictment.getJustification())
@@ -316,7 +318,7 @@ public abstract class AbstractScoreDirector<Solution_, Factory_ extends Abstract
                         scoreExplanation.append("            ...\n");
                     }
                 });
-        if (indictments.size() > INDICTMENT_LIMIT) {
+        if (indictmentMap.size() > INDICTMENT_LIMIT) {
             scoreExplanation.append("        ...\n");
         }
         return scoreExplanation.toString();
@@ -692,26 +694,26 @@ public abstract class AbstractScoreDirector<Solution_, Factory_ extends Abstract
                     + ") is disabled.\n"
                     + "  Check your score constraints manually.";
         }
-        Collection<ConstraintMatchTotal> corruptedConstraintMatchTotals = getConstraintMatchTotals();
-        Collection<ConstraintMatchTotal> uncorruptedConstraintMatchTotals
+        Collection<ConstraintMatchTotal<?>> corruptedConstraintMatchTotals = getConstraintMatchTotals();
+        Collection<ConstraintMatchTotal<?>> uncorruptedConstraintMatchTotals
                 = uncorruptedScoreDirector.getConstraintMatchTotals();
 
         // The order of justificationLists for score rules that include accumulates isn't stable, so we make it stable.
         ClassAndPlanningIdComparator comparator = new ClassAndPlanningIdComparator(false);
-        for (ConstraintMatchTotal constraintMatchTotal : corruptedConstraintMatchTotals) {
-            for (ConstraintMatch constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+        for (ConstraintMatchTotal<?> constraintMatchTotal : corruptedConstraintMatchTotals) {
+            for (ConstraintMatch<?> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                 constraintMatch.getJustificationList().sort(comparator);
             }
         }
-        for (ConstraintMatchTotal constraintMatchTotal : uncorruptedConstraintMatchTotals) {
-            for (ConstraintMatch constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+        for (ConstraintMatchTotal<?> constraintMatchTotal : uncorruptedConstraintMatchTotals) {
+            for (ConstraintMatch<?> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                 constraintMatch.getJustificationList().sort(comparator);
             }
         }
 
-        Map<List<Object>, ConstraintMatch> corruptedMap = createConstraintMatchMap(corruptedConstraintMatchTotals);
-        Map<List<Object>, ConstraintMatch> excessMap = new LinkedHashMap<>(corruptedMap);
-        Map<List<Object>, ConstraintMatch> missingMap = createConstraintMatchMap(uncorruptedConstraintMatchTotals);
+        Map<List<Object>, ConstraintMatch<?>> corruptedMap = createConstraintMatchMap(corruptedConstraintMatchTotals);
+        Map<List<Object>, ConstraintMatch<?>> excessMap = new LinkedHashMap<>(corruptedMap);
+        Map<List<Object>, ConstraintMatch<?>> missingMap = createConstraintMatchMap(uncorruptedConstraintMatchTotals);
         excessMap.keySet().removeAll(missingMap.keySet()); // missingMap == uncorruptedMap
         missingMap.keySet().removeAll(corruptedMap.keySet());
 
@@ -765,12 +767,12 @@ public abstract class AbstractScoreDirector<Solution_, Factory_ extends Abstract
         return analysis.toString();
     }
 
-    private Map<List<Object>, ConstraintMatch> createConstraintMatchMap(
-            Collection<ConstraintMatchTotal> constraintMatchTotals) {
-        Map<List<Object>, ConstraintMatch> constraintMatchMap = new LinkedHashMap<>(constraintMatchTotals.size() * 16);
-        for (ConstraintMatchTotal constraintMatchTotal : constraintMatchTotals) {
-            for (ConstraintMatch constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
-                ConstraintMatch previousConstraintMatch = constraintMatchMap.put(
+    private Map<List<Object>, ConstraintMatch<?>> createConstraintMatchMap(
+            Collection<ConstraintMatchTotal<?>> constraintMatchTotals) {
+        Map<List<Object>, ConstraintMatch<?>> constraintMatchMap = new LinkedHashMap<>(constraintMatchTotals.size() * 16);
+        for (ConstraintMatchTotal<?> constraintMatchTotal : constraintMatchTotals) {
+            for (ConstraintMatch<?> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+                ConstraintMatch<?> previousConstraintMatch = constraintMatchMap.put(
                         Arrays.<Object>asList(
                                 constraintMatchTotal.getConstraintPackage(),
                                 constraintMatchTotal.getConstraintName(),

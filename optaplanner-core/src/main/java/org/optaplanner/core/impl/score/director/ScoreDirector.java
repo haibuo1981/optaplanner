@@ -82,10 +82,16 @@ public interface ScoreDirector<Solution_> extends AutoCloseable {
      * <p>
      * Call {@link #calculateScore()} before calling this method,
      * unless that method has already been called since the last {@link PlanningVariable} changes.
+     * <p>
+     * It is strongly recommended to put the return value immediately into a type with your {@link Score} generic type parameter
+     * to avoid complex generic issues downstream in your code. For example:
+     * <pre>{@code Collection<ConstraintMatchTotal<HardMediumSoftScore>> totals = scoreDirector.getConstraintMatchTotals();}</pre>
      * @return never null
      * @throws IllegalStateException if {@link #isConstraintMatchEnabled()} returns false
+     * @param <Score_> the actual score type
      */
-    Collection<ConstraintMatchTotal> getConstraintMatchTotals();
+    <Score_ extends Score<Score_>>
+    Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
 
     /**
      * Explains the impact of each planning entity or problem fact on the {@link Score}.
@@ -102,10 +108,16 @@ public interface ScoreDirector<Solution_> extends AutoCloseable {
      * <p>
      * Call {@link #calculateScore()} before calling this method,
      * unless that method has already been called since the last {@link PlanningVariable} changes.
+     * <p>
+     * It is strongly recommended to put the return value immediately into a type with your {@link Score} generic type parameter
+     * to avoid complex generic issues downstream in your code. For example:
+     * <pre>{@code Map<Object, Indictment<HardMediumSoftScore>> indictmentMap = scoreDirector.getIndictmentMap();}</pre>
      * @return never null
      * @throws IllegalStateException if {@link #isConstraintMatchEnabled()} returns false
+     * @param <Score_> the actual score type
      */
-    Map<Object, Indictment> getIndictmentMap();
+    <Score_ extends Score<Score_>>
+    Map<Object, Indictment<Score_>> getIndictmentMap();
 
     /**
      * Returns a diagnostic text that explains the {@link Score} through the {@link ConstraintMatch} API
@@ -121,7 +133,9 @@ public interface ScoreDirector<Solution_> extends AutoCloseable {
      * This automatically calls {@link #calculateScore()} first.
      * @return never null
      * @throws IllegalStateException if {@link #isConstraintMatchEnabled()} returns false
+     * @param <Score_> the actual score type
      */
+    <Score_ extends Score<Score_>>
     String explainScore();
 
     void beforeEntityAdded(Object entity);

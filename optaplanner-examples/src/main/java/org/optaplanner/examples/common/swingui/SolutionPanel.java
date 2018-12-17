@@ -143,7 +143,7 @@ public abstract class SolutionPanel<Solution_> extends JPanel implements Scrolla
         if (useIndictmentColor) {
             indictmentMinimumLevelNumbers = null;
             for (Object planningEntity : planningEntityList) {
-                Indictment indictment = solutionBusiness.getIndictmentMap().get(planningEntity);
+                Indictment<?> indictment = solutionBusiness.getIndictmentMap().get(planningEntity);
                 if (indictment != null) {
                     Number[] levelNumbers = indictment.getScore().toLevelNumbers();
                     if (indictmentMinimumLevelNumbers == null) {
@@ -168,7 +168,7 @@ public abstract class SolutionPanel<Solution_> extends JPanel implements Scrolla
 
     public Color determinePlanningEntityColor(Object planningEntity, Object normalColorObject) {
         if (useIndictmentColor) {
-            Indictment indictment = solutionBusiness.getIndictmentMap().get(planningEntity);
+            Indictment<?> indictment = solutionBusiness.getIndictmentMap().get(planningEntity);
             if (indictment != null) {
                 Number[] levelNumbers = indictment.getScore().toLevelNumbers();
                 for (int i = 0; i < levelNumbers.length; i++) {
@@ -190,12 +190,12 @@ public abstract class SolutionPanel<Solution_> extends JPanel implements Scrolla
     }
 
     public String determinePlanningEntityTooltip(Object planningEntity) {
-        Indictment indictment = solutionBusiness.getIndictmentMap().get(planningEntity);
+        Indictment<?> indictment = solutionBusiness.getIndictmentMap().get(planningEntity);
         if (indictment == null) {
             return "<html>No indictment</html>";
         }
         StringBuilder s = new StringBuilder("<html>Indictment: ").append(indictment.getScore().toShortString());
-        for (ConstraintMatch constraintMatch : indictment.getConstraintMatchSet()) {
+        for (ConstraintMatch<?> constraintMatch : indictment.getConstraintMatchSet()) {
             s.append("<br/>&nbsp;&nbsp;").append(constraintMatch.getConstraintName())
                     .append(" = ").append(constraintMatch.getScore().toShortString());
         }

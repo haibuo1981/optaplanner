@@ -1508,15 +1508,17 @@ public class ConferenceSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<C
             if (talkList == null) {
                 talkList = Collections.emptyList();
             }
+            ggg;
             HardMediumSoftScore score = talkList.stream()
-                    .map(indictmentMap::get).filter(Objects::nonNull)
+                    .map(k -> (Indictment<HardMediumSoftScore>) indictmentMap.get(k))
+                    .filter(Objects::nonNull)
                     .flatMap(indictment -> indictment.getConstraintMatchSet().stream())
                     // Filter out filtered constraints
                     .filter(constraintMatch -> filteredConstraintNameList == null
                             || filteredConstraintNameList.contains(constraintMatch.getConstraintName()))
                     .filter(constraintMatch -> isValidJustificationList == null
                             || isValidJustificationList.test(constraintMatch.getJustificationList()))
-                    .map(constraintMatch -> (HardMediumSoftScore) constraintMatch.getScore())
+                    .map(ConstraintMatch::getScore)
                     // Filter out positive constraints
                     .filter(indictmentScore -> !(indictmentScore.getHardScore() >= 0 && indictmentScore.getMediumScore() >= 0 && indictmentScore.getSoftScore() >= 0))
                     .reduce(Score::add).orElse(HardMediumSoftScore.ZERO);
@@ -1550,24 +1552,26 @@ public class ConferenceSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<C
                             .append(": ").append(talk.getTitle()).append("\n    ")
                             .append(talk.getSpeakerList().stream().map(Speaker::getName).collect(joining(", ")))
                             .append(talk.isPinnedByUser() ? "\nPINNED BY USER" : "");
-                    Indictment indictment = indictmentMap.get(talk);
+                    ggg;
+                    Indictment<HardMediumSoftScore> indictment = (Indictment<HardMediumSoftScore>) indictmentMap.get(talk);
                     if (indictment != null) {
                         commentString.append("\n").append(indictment.getScore().toShortString())
                                 .append(" total");
-                        Set<ConstraintMatch> constraintMatchSet = indictment.getConstraintMatchSet().stream()
+                        Set<ConstraintMatch<HardMediumSoftScore>> constraintMatchSet = indictment.getConstraintMatchSet().stream()
                                 .filter(constraintMatch -> filteredConstraintNameList == null
                                         || filteredConstraintNameList.contains(constraintMatch.getConstraintName()))
                                 .collect(toSet());
                         List<String> constraintNameList = constraintMatchSet.stream()
                                 .map(ConstraintMatch::getConstraintName).distinct().collect(toList());
                         for (String constraintName : constraintNameList) {
-                            List<ConstraintMatch> filteredConstraintMatchList = constraintMatchSet.stream()
+                            List<ConstraintMatch<HardMediumSoftScore>> filteredConstraintMatchList = constraintMatchSet.stream()
                                     .filter(constraintMatch -> constraintMatch.getConstraintName().equals(constraintName)
                                             && (isValidJustificationList == null || isValidJustificationList.test(constraintMatch.getJustificationList())))
                                     .collect(toList());
-                            Score sum = filteredConstraintMatchList.stream()
+                            HardMediumSoftScore sum = filteredConstraintMatchList.stream()
                                     .map(ConstraintMatch::getScore)
-                                    .reduce(Score::add).orElse(HardMediumSoftScore.ZERO);
+                                    .reduce(HardMediumSoftScore::add)
+                                    .orElse(HardMediumSoftScore.ZERO);
                             String justificationTalkCodes = filteredConstraintMatchList.stream()
                                     .flatMap(constraintMatch -> constraintMatch.getJustificationList().stream())
                                     .filter(justification -> justification instanceof Talk && justification != talk)

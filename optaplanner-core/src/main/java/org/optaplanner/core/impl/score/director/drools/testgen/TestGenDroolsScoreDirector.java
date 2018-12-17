@@ -148,7 +148,7 @@ public class TestGenDroolsScoreDirector<Solution_> extends DroolsScoreDirector<S
     }
 
     @Override
-    public Collection<ConstraintMatchTotal> getConstraintMatchTotals() {
+    public <Score_ extends Score<Score_>> Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals() {
         journal.fireAllRules();
         return super.getConstraintMatchTotals();
     }

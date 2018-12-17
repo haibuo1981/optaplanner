@@ -26,7 +26,7 @@ import org.optaplanner.test.impl.score.AbstractScoreVerifier;
  * that uses a {@link SimpleLongScore}.
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class SimpleLongScoreVerifier<Solution_> extends AbstractScoreVerifier<Solution_> {
+public class SimpleLongScoreVerifier<Solution_> extends AbstractScoreVerifier<Solution_, SimpleLongScore> {
 
     /**
      * @param solverFactory never null, the {@link SolverFactory} of which you want to test the constraints.

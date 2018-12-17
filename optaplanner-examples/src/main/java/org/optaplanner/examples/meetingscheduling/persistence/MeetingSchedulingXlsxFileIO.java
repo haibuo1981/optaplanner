@@ -875,20 +875,20 @@ public class MeetingSchedulingXlsxFileIO extends AbstractXlsxSolutionFileIO<Meet
                         .append("Duration: ").append(meetingAssignment.getMeeting().getDurationInGrains() * TimeGrain.GRAIN_LENGTH_IN_MINUTES).append(" minutes.\n")
                         .append("Room: ").append(meetingAssignment.getRoom().getName()).append("\n");
 
-                Indictment indictment = indictmentMap.get(meetingAssignment);
+                Indictment<HardMediumSoftScore> indictment = indictmentMap.get(meetingAssignment);
                 if (indictment != null) {
                     commentString.append("\n").append(indictment.getScore().toShortString())
                             .append(" total");
-                    Set<ConstraintMatch> constraintMatchSet = indictment.getConstraintMatchSet();
+                    Set<ConstraintMatch<HardMediumSoftScore>> constraintMatchSet = indictment.getConstraintMatchSet();
                     List<String> constraintNameList = constraintMatchSet.stream()
                             .map(ConstraintMatch::getConstraintName).distinct().collect(toList());
                     for (String constraintName : constraintNameList) {
-                        List<ConstraintMatch> filteredConstraintMatchList = constraintMatchSet.stream()
+                        List<ConstraintMatch<HardMediumSoftScore>> filteredConstraintMatchList = constraintMatchSet.stream()
                                 .filter(constraintMatch -> constraintMatch.getConstraintName().equals(constraintName))
                                 .collect(toList());
                         Score sum = filteredConstraintMatchList.stream()
                                 .map(ConstraintMatch::getScore)
-                                .reduce(Score::add).orElse(HardSoftScore.ZERO);
+                                .reduce(Score::add).orElse(HardMediumSoftScore.ZERO);
                         String justificationTalkCodes = filteredConstraintMatchList.stream()
                                 .flatMap(constraintMatch -> constraintMatch.getJustificationList().stream())
                                 .filter(justification -> justification instanceof MeetingAssignment && justification != meetingAssignment)

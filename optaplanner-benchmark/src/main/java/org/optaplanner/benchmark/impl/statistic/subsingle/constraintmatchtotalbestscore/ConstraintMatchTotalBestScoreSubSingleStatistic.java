@@ -114,7 +114,7 @@ public class ConstraintMatchTotalBestScoreSubSingleStatistic<Solution_>
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
             if (constraintMatchEnabled && stepScope.getBestScoreImproved()) {
                 long timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
-                for (ConstraintMatchTotal constraintMatchTotal : stepScope.getScoreDirector().getConstraintMatchTotals()) {
+                for (ConstraintMatchTotal<?> constraintMatchTotal : stepScope.getScoreDirector().getConstraintMatchTotals()) {
                     pointList.add(new ConstraintMatchTotalBestScoreStatisticPoint(
                             timeMillisSpent,
                             constraintMatchTotal.getConstraintPackage(),

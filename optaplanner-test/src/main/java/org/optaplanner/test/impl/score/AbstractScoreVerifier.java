@@ -18,6 +18,7 @@ package org.optaplanner.test.impl.score;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
 
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.score.Score;
@@ -42,7 +43,7 @@ import static org.junit.Assert.*;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see HardSoftScoreVerifier
  */
-public abstract class AbstractScoreVerifier<Solution_> {
+public abstract class AbstractScoreVerifier<Solution_, Score_ extends Score<Score_>> {
 
     protected final InnerScoreDirectorFactory<Solution_> scoreDirectorFactory;
 
@@ -50,14 +51,13 @@ public abstract class AbstractScoreVerifier<Solution_> {
      * @param solverFactory never null, the {@link SolverFactory} of which you want to test the constraints.
      * @param expectedScoreClass never null, used to fail fast if a {@link SolverFactory} with another {@link Score} type is used.
      */
-    public AbstractScoreVerifier(SolverFactory<Solution_> solverFactory,
-            Class<? extends Score> expectedScoreClass) {
+    public AbstractScoreVerifier(SolverFactory<Solution_> solverFactory, Class<Score_> expectedScoreClass) {
         if (solverFactory == null) {
             throw new IllegalStateException("The solverFactory (" + solverFactory + ") cannot be null.");
         }
         scoreDirectorFactory = (InnerScoreDirectorFactory<Solution_>) solverFactory.buildSolver().getScoreDirectorFactory();
         SolutionDescriptor<Solution_> solutionDescriptor = ((InnerScoreDirectorFactory<Solution_>) scoreDirectorFactory).getSolutionDescriptor();
-        Class<? extends Score> scoreClass = solutionDescriptor.getScoreDefinition().getScoreClass();
+        Class<Score_> scoreClass = solutionDescriptor.getScoreDefinition().getScoreClass();
         if (expectedScoreClass != scoreClass) {
             throw new IllegalStateException("The solution's scoreClass (" + scoreClass
                     + ") differs from the test's expectedScoreClass (" + expectedScoreClass + ").");
@@ -80,7 +80,7 @@ public abstract class AbstractScoreVerifier<Solution_> {
         ScoreDirector<Solution_> scoreDirector = scoreDirectorFactory.buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
-        ConstraintMatchTotal matchTotal = findConstraintMatchTotal(constraintPackage, constraintName, scoreDirector);
+        ConstraintMatchTotal<Score_> matchTotal = findConstraintMatchTotal(constraintPackage, constraintName, scoreDirector);
         // A matchTotal is null if the score rule didn't fire now and never fired in a previous incremental calculation
         // (including those that are undone).
         // To avoid user pitfalls, the expectedWeight cannot be null and a matchTotal of null is treated as zero.
@@ -121,10 +121,11 @@ public abstract class AbstractScoreVerifier<Solution_> {
      * @param scoreDirector never null
      * @return null if there is no constraint matched or the constraint doesn't exist
      */
-    private ConstraintMatchTotal findConstraintMatchTotal(
+    private ConstraintMatchTotal<Score_> findConstraintMatchTotal(
             String constraintPackage, String constraintName, ScoreDirector<Solution_> scoreDirector) {
-        ConstraintMatchTotal matchTotal = null;
-        for (ConstraintMatchTotal selectedMatchTotal : scoreDirector.getConstraintMatchTotals()) {
+        ConstraintMatchTotal<Score_> matchTotal = null;
+        Collection<ConstraintMatchTotal<Score_>> constraintMatchTotals = scoreDirector.getConstraintMatchTotals();
+        for (ConstraintMatchTotal<Score_> selectedMatchTotal : constraintMatchTotals) {
             if (selectedMatchTotal.getConstraintName().equals(constraintName)
                     && (constraintPackage == null || selectedMatchTotal.getConstraintPackage().equals(constraintPackage))) {
                 if (matchTotal != null) {

@@ -26,18 +26,19 @@ import org.optaplanner.core.impl.score.director.ScoreDirector;
 /**
  * Retrievable from {@link ScoreDirector#getIndictmentMap()}.
  */
-public final class Indictment implements Serializable, Comparable<Indictment> {
+public final class Indictment<Score_ extends Score<Score_>>
+        implements Serializable, Comparable<Indictment<Score_>> {
 
     private final Object justification;
 
-    private final Set<ConstraintMatch> constraintMatchSet;
-    private Score score;
+    private final Set<ConstraintMatch<Score_>> constraintMatchSet;
+    private Score_ score;
 
     /**
      * @param justification never null
      * @param zeroScore never null
      */
-    public Indictment(Object justification, Score zeroScore) {
+    public Indictment(Object justification, Score_ zeroScore) {
         this.justification = justification;
         constraintMatchSet = new LinkedHashSet<>();
         score = zeroScore;
@@ -53,7 +54,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
     /**
      * @return never null
      */
-    public Set<ConstraintMatch> getConstraintMatchSet() {
+    public Set<ConstraintMatch<Score_>> getConstraintMatchSet() {
         return constraintMatchSet;
     }
 
@@ -68,7 +69,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
      * Sum of the {@link #getConstraintMatchSet()}'s {@link ConstraintMatch#getScore()}.
      * @return never null
      */
-    public Score getScore() {
+    public Score_ getScore() {
         return score;
     }
 
@@ -77,7 +78,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
      * @deprecated in favor of {@link #getScore()}
      */
     @Deprecated
-    public Score getScoreTotal() {
+    public Score_ getScoreTotal() {
         return getScore();
     }
 
@@ -85,7 +86,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
     // Worker methods
     // ************************************************************************
 
-    public void addConstraintMatch(ConstraintMatch constraintMatch) {
+    public void addConstraintMatch(ConstraintMatch<Score_> constraintMatch) {
         score = score.add(constraintMatch.getScore());
         boolean added = constraintMatchSet.add(constraintMatch);
         if (!added) {
@@ -95,7 +96,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
         }
     }
 
-    public void removeConstraintMatch(ConstraintMatch constraintMatch) {
+    public void removeConstraintMatch(ConstraintMatch<Score_> constraintMatch) {
         score = score.subtract(constraintMatch.getScore());
         boolean removed = constraintMatchSet.remove(constraintMatch);
         if (!removed) {
@@ -110,7 +111,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
     // ************************************************************************
 
     @Override
-    public int compareTo(Indictment other) {
+    public int compareTo(Indictment<Score_> other) {
         if (!(justification instanceof Comparable)) {
             throw new IllegalStateException("The justification (" + justification + ") does not implement "
                     + Comparable.class.getSimpleName() + ", so it cannot be compared with otherJustification ("
@@ -124,7 +125,7 @@ public final class Indictment implements Serializable, Comparable<Indictment> {
         if (this == o) {
             return true;
         } else if (o instanceof Indictment) {
-            Indictment other = (Indictment) o;
+            Indictment<Score_> other = (Indictment<Score_>) o;
             return justification.equals(other.justification);
         } else {
             return false;
